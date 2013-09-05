@@ -6,7 +6,7 @@
 
 #define BUFFER_SIZE  (256 * 1024)  /* 256 KB */
 
-// gcc -Wall -o get_forms_test get_forms_test.c -ljansson /usr/lib/x86_64-linux-gnu/libcurl.so.4.3.0
+// gcc -o doc_test doc_test.c -ljansson /usr/lib/x86_64-linux-gnu/libcurl.so.4.3.0
 
 struct write_result
 {
@@ -75,6 +75,18 @@ static char *request(const char *url)
     return data;
 }
 
+json_t *get_couchdb_object_list(json_t *object) {
+  json_t *rows;
+
+  rows = json_object_get(object, "rows");
+  if (!json_is_array(rows)) {
+    fprintf(stderr, "error: rows is not an object\n");
+    json_decref(object);
+    return 1;
+  }
+
+  return rows;
+}
 
 int main(int argc,char * argv[]) {
   char *text;
@@ -84,7 +96,6 @@ int main(int argc,char * argv[]) {
   // Adjust the URL according to your CouchDB server. 
   char url[] = "http://localhost:5984/formation/_design/forms/_view/forms";
   text = request(url);
-  printf("%s\n", text);
 
   // Load the Json.
   root = json_loads(text, 0, &error);
@@ -93,6 +104,45 @@ int main(int argc,char * argv[]) {
   if(!root) {
     fprintf(stderr, "error: on line %d: %s url: %s\n", error.line, error.text, url);
     return 1;
+  }
+
+  // Get an array of form documents from the "rows".
+  json_t *forms = get_couchdb_object_list(root);
+
+  size_t x;
+  for (x = 0; x < json_array_size(forms);  x++) {
+
+      json_t *form = json_array_get(forms, x);
+      if(!json_is_object(form))
+      {
+          fprintf(stderr, "error: row %d: is not an object\n", x + 1);
+          json_decref(root);
+          return 1;
+      }
+
+      json_t *doc = json_object_get(form, "value");
+      if(!json_is_object(doc))
+      {
+          fprintf(stderr, "error: doc %d: is not an object\n", x + 1);
+          json_decref(root);
+          return 1;
+      }
+
+      json_t *_id;
+      char *_id_v;
+      _id = json_object_get(doc, "_id");
+      _id_v = json_string_value(_id);
+
+      printf("%s\n", _id_v);
+     
+      json_t *modifier_v = json_string("sommera");
+      json_object_set(doc, "modifier", modifier_v);
+
+      char *output = json_dumps(doc, json_object_size(doc));
+      printf("%s\n", output);
+
+      free(output);
+
   }
 
   json_decref(root);

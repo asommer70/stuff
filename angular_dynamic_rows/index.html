@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html ng-app="testApp">
+<head>
+  <title>Dynamic Table Rows with Angular.js</title>
+
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
+<script type="text/javascript" src="app.js"></script>
+</head>
+<body>
+
+    <table>
+      <tbody>
+      <tr>
+        <td><p>Item Name:</p></td>
+        <td><p>Description:</p></td>
+        <td><p>Part Number:</p></td>
+      </tr>
+      <tr>
+        <td><input class="itemname" name="itemname" type="text"></td>
+        <td><input class="desc" name="desc" type="text"></td>
+        <td><input class="partnum" name="partnum" type="text"></td>
+      </tr>
+      </tbody>
+      <tbody>
+      <tr>
+        <td><input type="button" value=" + " addrow/></td>
+      </tr>
+      </tbody>
+    </table>
+
+</body>
+</html>
